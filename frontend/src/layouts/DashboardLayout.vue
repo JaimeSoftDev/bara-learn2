@@ -20,6 +20,7 @@ const links = computed(() => {
       { to: { name: 'teacher-overview' }, label: 'Resumen' },
       { to: { name: 'teacher-courses' }, label: 'Mis cursos' },
       { to: { name: 'teacher-orders' }, label: 'Pedidos e ingresos' },
+      { to: { name: 'teacher-tutoring' }, label: 'Tutorías' },
       { to: { name: 'account-profile' }, label: 'Mi perfil' },
     ]
   }

@@ -10,6 +10,7 @@ use App\Models\Lesson;
 use App\Models\LessonProgress;
 use App\Models\Order;
 use App\Models\Question;
+use App\Models\Quiz;
 use App\Models\Review;
 use App\Models\Section;
 use App\Models\User;
@@ -190,6 +191,48 @@ class DatabaseSeeder extends Seeder
             LessonProgress::create(['user_id' => $ana->id, 'lesson_id' => $lesson->id, 'completed_at' => now()->subDays(random_int(1, 15))]);
         }
 
+        // --- Quizzes / exams ---
+        $mendelSection = $freeCourse->sections->firstWhere('title', 'Las Leyes de Mendel');
+        $sectionQuiz = $this->createQuiz($freeCourse, $mendelSection, 'Examen: Las Leyes de Mendel', [
+            ['¿Qué establece la primera ley de Mendel (ley de la segregación)?', [
+                ['Los alelos de un gen se separan durante la formación de los gametos.', true],
+                ['Los genes de distintos cromosomas se heredan siempre juntos.', false],
+            ]],
+            ['En un cruce monohíbrido Aa x Aa, con A dominante, ¿qué proporción fenotípica se espera en la F2?', [
+                ['3:1', true],
+                ['1:1', false],
+            ]],
+        ]);
+
+        $finalExam = $this->createQuiz($freeCourse, null, 'Examen final: Genética Mendeliana', [
+            ['¿Para qué sirve un cuadro de Punnett?', [
+                ['Para predecir la combinación de alelos en la descendencia.', true],
+                ['Para extraer ADN en el laboratorio.', false],
+            ]],
+            ['En humanos, la herencia ligada al sexo afecta principalmente a genes situados en:', [
+                ['El cromosoma Y', false],
+                ['El cromosoma X', true],
+            ]],
+        ]);
+
+        // Ana passes both exams, matching her earned certificate below.
+        $this->seedPassingAttempt($sectionQuiz, $ana);
+        $this->seedPassingAttempt($finalExam, $ana);
+
+        // The paid course also has a section quiz, left unattempted so
+        // Pedro/Sofía can try it out from a fresh enrollment.
+        $dnaSection = $paidCourse->sections->firstWhere('title', 'Estructura y Replicación del ADN');
+        $this->createQuiz($paidCourse, $dnaSection, 'Examen: Estructura y Replicación del ADN', [
+            ['¿Qué forma tridimensional describe la molécula de ADN?', [
+                ['Doble hélice', true],
+                ['Lámina plegada', false],
+            ]],
+            ['¿Qué enzima sintetiza la nueva cadena de ADN durante la replicación?', [
+                ['ADN polimerasa', true],
+                ['ARN polimerasa', false],
+            ]],
+        ]);
+
         Certificate::create(['user_id' => $ana->id, 'course_id' => $freeCourse->id, 'code' => (string) Str::uuid(), 'issued_at' => now()->subDays(1)]);
 
         Review::create(['user_id' => $ana->id, 'course_id' => $freeCourse->id, 'rating' => 5, 'comment' => 'Por fin entendí la genética mendeliana. Explicaciones clarísimas y ejercicios muy parecidos a los de mi facultad.']);
@@ -255,5 +298,52 @@ class DatabaseSeeder extends Seeder
         $this->command?->info('  Admin:    admin@adntrate.test');
         $this->command?->info('  Profesores: elena@adntrate.test / javier@adntrate.test');
         $this->command?->info('  Alumnos:  ana@adntrate.test, pedro@adntrate.test, sofia@adntrate.test ...');
+    }
+
+    /**
+     * @param  array<int, array{0: string, 1: array<int, array{0: string, 1: bool}>}>  $questions
+     */
+    private function createQuiz(Course $course, ?Section $section, string $title, array $questions, int $passingScore = 70): Quiz
+    {
+        $quiz = Quiz::create([
+            'course_id' => $course->id,
+            'section_id' => $section?->id,
+            'title' => $title,
+            'passing_score' => $passingScore,
+        ]);
+
+        foreach ($questions as $position => [$questionText, $options]) {
+            $question = $quiz->questions()->create(['question' => $questionText, 'position' => $position]);
+
+            foreach ($options as $optionPosition => [$optionText, $isCorrect]) {
+                $question->options()->create([
+                    'option_text' => $optionText,
+                    'is_correct' => $isCorrect,
+                    'position' => $optionPosition,
+                ]);
+            }
+        }
+
+        return $quiz;
+    }
+
+    private function seedPassingAttempt(Quiz $quiz, User $user): void
+    {
+        $quiz->loadMissing('questions.options');
+
+        $attempt = $quiz->attempts()->create([
+            'user_id' => $user->id,
+            'score' => 100,
+            'passed' => true,
+            'submitted_at' => now()->subDays(2),
+        ]);
+
+        foreach ($quiz->questions as $question) {
+            $attempt->answers()->create([
+                'quiz_question_id' => $question->id,
+                'quiz_option_id' => $question->correctOption()?->id,
+                'is_correct' => true,
+            ]);
+        }
     }
 }

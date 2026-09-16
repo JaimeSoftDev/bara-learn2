@@ -16,6 +16,24 @@ Todo lo que sigue trabaja **únicamente** dentro de
 `~/domains/jaimesoftdev.es/`. No se toca nada de `inventario`, ni de
 `jaimesoftdev.com`, ni de `neosdalud.com`.
 
+## PHP: usa el binario correcto por SSH
+
+Laravel 13 necesita **PHP 8.3 o superior**, pero el `php` por defecto en
+la sesión SSH de Hostinger puede apuntar a una versión más antigua (por
+ejemplo 8.2), aunque hayas seleccionado una versión más nueva para la
+web en hPanel. En este servidor, las distintas versiones de PHP viven
+en `/opt/alt/phpXX/usr/bin/php` (patrón de CloudLinux), y **PHP 8.4**
+está disponible en:
+
+```
+/opt/alt/php84/usr/bin/php
+```
+
+Por eso, en todos los comandos de este documento se usa esa ruta
+completa en vez de `php` o `composer` a secas. Si en el futuro cambias
+de servidor y esta ruta no existe, busca las versiones disponibles con
+`ls /opt/alt/` o `ls /usr/bin/php*` y sustitúyela.
+
 ## Cómo está pensado el despliegue
 
 En vez de cambiar el "document root" en el panel (que en Hostinger no
@@ -36,8 +54,6 @@ Composer y MySQL.
 
 ## 0. Requisitos previos (una sola vez, en hPanel)
 
-- **PHP 8.3 o superior** para el dominio `jaimesoftdev.es`: hPanel →
-  Sitios web → `jaimesoftdev.es` → Configuración PHP.
 - **Base de datos MySQL** creada: hPanel → Bases de datos → Bases de
   datos MySQL → crea una nueva y apunta el host, nombre de BD, usuario y
   contraseña que te muestre.
@@ -77,22 +93,13 @@ Con esto tendrás:
         └── frontend/        ← código fuente de Vue (no se usa en el servidor, ya viene compilado)
 ```
 
-## 3. Instalar dependencias PHP
+## 3. Instalar Composer y las dependencias PHP
 
 ```bash
 cd ~/domains/jaimesoftdev.es/adntrate/backend
-composer install --no-dev --optimize-autoloader
+curl -sS https://getcomposer.org/installer | /opt/alt/php84/usr/bin/php
+/opt/alt/php84/usr/bin/php composer.phar install --no-dev --optimize-autoloader
 ```
-
-Si el comando `composer` no existe, instálalo una vez:
-
-```bash
-curl -sS https://getcomposer.org/installer | php
-php composer.phar install --no-dev --optimize-autoloader
-```
-
-(en ese caso, usa `php composer.phar` en vez de `composer` en el resto
-de la guía).
 
 ## 4. Configurar el entorno de producción
 
@@ -133,29 +140,30 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 Guarda (en `nano`: Ctrl+O, Enter, Ctrl+X) y genera la clave de la app:
 
 ```bash
-php artisan key:generate --force
+/opt/alt/php84/usr/bin/php artisan key:generate --force
 ```
 
 ## 5. Migraciones
 
 ```bash
-php artisan migrate --force
+/opt/alt/php84/usr/bin/php artisan migrate --force
 ```
 
 ¿Quieres los cursos/profesores/alumnos de ejemplo también en
 producción? Añade `--seed`:
 
 ```bash
-php artisan migrate --force --seed
+/opt/alt/php84/usr/bin/php artisan migrate --force --seed
 ```
 
 Si prefieres arrancar limpio (sin datos de demo), crea tu propio
 administrador:
 
 ```bash
-php artisan tinker
->>> \App\Models\User::create(['name' => 'Tu Nombre', 'email' => 'tu@email.com', 'password' => bcrypt('una-contraseña-segura'), 'role' => 'admin']);
->>> exit
+/opt/alt/php84/usr/bin/php artisan tinker --execute="
+\App\Models\User::create(['name' => 'Tu Nombre', 'email' => 'tu@email.com', 'password' => \Illuminate\Support\Facades\Hash::make('una-contraseña-segura'), 'role' => 'admin']);
+echo 'Admin creado' . PHP_EOL;
+"
 ```
 
 ## 6. Permisos
@@ -224,8 +232,8 @@ evento `checkout.session.completed`, y copia el "Signing secret" a
 cd ~/domains/jaimesoftdev.es/adntrate
 git pull origin main
 cd backend
-composer install --no-dev --optimize-autoloader
-php artisan migrate --force
+/opt/alt/php84/usr/bin/php composer.phar install --no-dev --optimize-autoloader
+/opt/alt/php84/usr/bin/php artisan migrate --force
 ```
 
 **Cambios de frontend** (Vue): primero, en tu máquina (o pídemelo a mí),
@@ -245,14 +253,18 @@ el enlace simbólico.
 
 ## Problemas comunes
 
+- **`composer install` dice que tu versión de PHP no es compatible**:
+  estás usando el `php`/`composer` por defecto de la sesión SSH (más
+  antiguo). Usa siempre la ruta completa `/opt/alt/php84/usr/bin/php`
+  como en los comandos de esta guía.
 - **La web da 500 con `APP_DEBUG=false`**: revisa el log por SSH:
   `tail -50 ~/domains/jaimesoftdev.es/adntrate/backend/storage/logs/laravel.log`.
 - **Los enlaces internos dan 404 al refrescar**: confirma que
   `public_html` es el enlace simbólico del paso 7 y que
   `adntrate/backend/public/.htaccess` existe (viene con el repositorio).
 - **"Class not found" o error de Composer**: vuelve a ejecutar
-  `composer install --no-dev --optimize-autoloader` dentro de
-  `adntrate/backend`, y confirma que `php -v` es 8.3 o superior.
+  `/opt/alt/php84/usr/bin/php composer.phar install --no-dev --optimize-autoloader`
+  dentro de `adntrate/backend`.
 - **Login/registro fallan con error de CSRF**: revisa que `APP_URL` en
   `.env` sea exactamente `https://jaimesoftdev.es` y que
   `SANCTUM_STATEFUL_DOMAINS=jaimesoftdev.es` (sin `https://` ni barra

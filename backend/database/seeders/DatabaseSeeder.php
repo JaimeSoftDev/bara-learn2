@@ -13,6 +13,7 @@ use App\Models\Question;
 use App\Models\Quiz;
 use App\Models\Review;
 use App\Models\Section;
+use App\Models\TutoringThread;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -279,6 +280,22 @@ class DatabaseSeeder extends Seeder
             'price_paid_cents' => $cashOrder->amount_cents,
             'enrolled_at' => now()->subDays(6),
         ]);
+
+        // --- Tutorías: private student-teacher chat, 5 questions included per course ---
+        $pedroThread = TutoringThread::create(['course_id' => $paidCourse->id, 'student_id' => $pedro->id]);
+        $pedroThread->messages()->create(['sender_id' => $pedro->id, 'body' => '¿La ADN polimerasa puede corregir errores durante la replicación o solo los detecta?']);
+        $pedroThread->messages()->create(['sender_id' => $paidCourse->teacher_id, 'body' => 'Buena pregunta. La ADN polimerasa tiene actividad de corrección de pruebas (proofreading): detecta el error y elimina el nucleótido mal emparejado antes de seguir replicando.']);
+        $pedroThread->messages()->create(['sender_id' => $pedro->id, 'body' => '¿Y ese mecanismo también actúa durante la transcripción?']);
+
+        // Sofía has already used her 5 questions and the teacher granted 3 extra.
+        $sofiaThread = TutoringThread::create(['course_id' => $paidCourse->id, 'student_id' => $sofia->id, 'extra_questions' => 3]);
+        $sofiaThread->messages()->create(['sender_id' => $sofia->id, 'body' => '¿Qué diferencia hay entre un intrón y un exón?']);
+        $sofiaThread->messages()->create(['sender_id' => $paidCourse->teacher_id, 'body' => 'Los exones son las secuencias codificantes que permanecen en el ARNm maduro; los intrones se eliminan durante el splicing.']);
+        $sofiaThread->messages()->create(['sender_id' => $sofia->id, 'body' => '¿Todos los genes humanos tienen intrones?']);
+        $sofiaThread->messages()->create(['sender_id' => $paidCourse->teacher_id, 'body' => 'No todos, pero la mayoría de los genes humanos sí los tienen.']);
+        $sofiaThread->messages()->create(['sender_id' => $sofia->id, 'body' => '¿Por qué existen los intrones si no codifican proteína?']);
+        $sofiaThread->messages()->create(['sender_id' => $sofia->id, 'body' => '¿Puede haber splicing alternativo en el mismo gen?']);
+        $sofiaThread->messages()->create(['sender_id' => $sofia->id, 'body' => '¿Los intrones se traducen alguna vez, aunque sea por error?']);
 
         // A question on the first lesson of the free course, answered by the instructor.
         $firstLesson = $freeCourse->sections->first()->lessons->first();

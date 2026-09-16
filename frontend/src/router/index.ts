@@ -109,6 +109,12 @@ const router = createRouter({
           component: () => import('@/views/teacher/TeacherOrdersView.vue'),
           meta: { role: 'teacher' },
         },
+        {
+          path: 'teacher/tutoring',
+          name: 'teacher-tutoring',
+          component: () => import('@/views/teacher/TeacherTutoringView.vue'),
+          meta: { role: 'teacher' },
+        },
         // Admin
         {
           path: 'admin',

@@ -160,6 +160,27 @@ export interface Order {
   created_by: { id: number; name: string } | null
 }
 
+export interface TutoringMessage {
+  id: number
+  body: string
+  sender: { id: number; name: string; avatar_url: string | null }
+  is_mine: boolean
+  created_at: string
+}
+
+export interface TutoringThread {
+  id: number
+  course: { id: number; title: string; slug: string }
+  student: { id: number; name: string; avatar_url: string | null }
+  questions_used: number
+  questions_limit: number
+  questions_remaining: number
+  unread_count: number
+  last_message: { body: string; sender_id: number; created_at: string } | null
+  messages: TutoringMessage[]
+  updated_at: string
+}
+
 export interface Certificate {
   id: number
   code: string

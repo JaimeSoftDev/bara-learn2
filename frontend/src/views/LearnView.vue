@@ -6,6 +6,7 @@ import { useToastStore } from '@/stores/toast'
 import { apiErrorMessage } from '@/composables/useApiError'
 import YoutubePlayer from '@/components/YoutubePlayer.vue'
 import QuizPlayer from '@/components/QuizPlayer.vue'
+import TutoringChat from '@/components/TutoringChat.vue'
 import type { Course, Lesson, Question, QuizSummary } from '@/types'
 
 const props = defineProps<{ slug: string }>()
@@ -15,6 +16,7 @@ const toast = useToastStore()
 const course = ref<Course | null>(null)
 const activeLesson = ref<Lesson | null>(null)
 const activeQuiz = ref<QuizSummary | null>(null)
+const activeTutoring = ref(false)
 const loading = ref(true)
 const marking = ref(false)
 const questions = ref<Question[]>([])
@@ -52,6 +54,7 @@ onMounted(load)
 
 async function selectLesson(lesson: Lesson) {
   activeQuiz.value = null
+  activeTutoring.value = false
   activeLesson.value = lesson
   tab.value = 'content'
   if (lesson.locked) return
@@ -61,7 +64,14 @@ async function selectLesson(lesson: Lesson) {
 
 function selectQuiz(quiz: QuizSummary) {
   activeLesson.value = null
+  activeTutoring.value = false
   activeQuiz.value = quiz
+}
+
+function selectTutoring() {
+  activeLesson.value = null
+  activeQuiz.value = null
+  activeTutoring.value = true
 }
 
 async function refreshCourse() {
@@ -146,6 +156,12 @@ async function submitAnswer(questionId: number) {
         ← Volver a las lecciones
       </button>
       <QuizPlayer :course-slug="course.slug" :quiz-id="activeQuiz.id" @graded="onQuizGraded" />
+    </div>
+    <div v-else-if="activeTutoring" class="flex-1 min-w-0 bg-white p-6">
+      <button class="text-xs text-gray-500 hover:text-gray-800 mb-4" @click="activeTutoring = false">
+        ← Volver a las lecciones
+      </button>
+      <TutoringChat :course-slug="course.slug" />
     </div>
     <div v-else class="flex-1 min-w-0 bg-black">
       <YoutubePlayer
@@ -256,6 +272,14 @@ async function submitAnswer(questionId: number) {
         </div>
         <p class="text-xs text-gray-500 mt-1">{{ progressPercent }}% completado</p>
       </div>
+
+      <button
+        class="w-full text-left px-4 py-3 flex items-center gap-3 border-b border-gray-200 hover:bg-gray-50"
+        :class="activeTutoring ? 'bg-brand-50' : ''"
+        @click="selectTutoring"
+      >
+        <span class="text-sm flex-1 text-gray-800 font-medium">💬 Tutorías con el profesor</span>
+      </button>
 
       <div class="overflow-y-auto flex-1">
         <div v-for="section in course.sections" :key="section.id">

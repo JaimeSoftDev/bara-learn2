@@ -1,6 +1,9 @@
 import axios from 'axios'
 
-const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+// In production the SPA is served from the same origin as the Laravel API
+// (see docs/deploy-hostinger.md), so an unset VITE_API_URL resolves to
+// relative paths. Local development sets it explicitly in frontend/.env.
+const baseURL = import.meta.env.VITE_API_URL ?? ''
 
 export const api = axios.create({
   baseURL: `${baseURL}/api`,

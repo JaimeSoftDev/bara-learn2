@@ -5,7 +5,7 @@ import type { Certificate } from '@/types'
 
 const certificates = ref<Certificate[]>([])
 const loading = ref(true)
-const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+const apiUrl = import.meta.env.VITE_API_URL ?? ''
 
 onMounted(async () => {
   try {

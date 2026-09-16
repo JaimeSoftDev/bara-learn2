@@ -17,6 +17,8 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\StripeWebhookController;
 use App\Http\Controllers\Api\TeacherDashboardController;
+use App\Http\Controllers\Api\TeacherTutoringController;
+use App\Http\Controllers\Api\TutoringController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\Auth\AuthController;
@@ -66,6 +68,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/courses/{course:slug}/quizzes/{quiz}/take', [QuizAttemptController::class, 'show']);
     Route::post('/courses/{course:slug}/quizzes/{quiz}/attempts', [QuizAttemptController::class, 'store']);
 
+    Route::get('/courses/{course:slug}/tutoring', [TutoringController::class, 'show']);
+    Route::post('/courses/{course:slug}/tutoring/messages', [TutoringController::class, 'sendMessage']);
+    Route::post('/courses/{course:slug}/tutoring/read', [TutoringController::class, 'markRead']);
+
     Route::post('/lessons/{lesson}/complete', [LessonProgressController::class, 'complete']);
     Route::delete('/lessons/{lesson}/complete', [LessonProgressController::class, 'uncomplete']);
 
@@ -100,6 +106,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/teacher/overview', [TeacherDashboardController::class, 'overview']);
         Route::get('/teacher/orders', [TeacherDashboardController::class, 'orders']);
+
+        Route::get('/teacher/tutoring', [TeacherTutoringController::class, 'index']);
+        Route::get('/teacher/tutoring/{thread}', [TeacherTutoringController::class, 'show']);
+        Route::post('/teacher/tutoring/{thread}/messages', [TeacherTutoringController::class, 'sendMessage']);
+        Route::post('/teacher/tutoring/{thread}/read', [TeacherTutoringController::class, 'markRead']);
+        Route::post('/teacher/tutoring/{thread}/grant', [TeacherTutoringController::class, 'grantExtra']);
     });
 
     // Admin

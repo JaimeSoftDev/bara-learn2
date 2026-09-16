@@ -75,6 +75,11 @@ class Course extends Model
         return $this->hasMany(Quiz::class);
     }
 
+    public function tutoringThreads(): HasMany
+    {
+        return $this->hasMany(TutoringThread::class);
+    }
+
     public function finalQuiz(): ?Quiz
     {
         if ($this->relationLoaded('quizzes')) {

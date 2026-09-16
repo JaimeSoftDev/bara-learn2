@@ -13,7 +13,7 @@ async function verify() {
   loading.value = true
   result.value = null
   try {
-    const baseURL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+    const baseURL = import.meta.env.VITE_API_URL ?? ''
     const { data } = await axios.get(`${baseURL}/api/certificates/verify/${code.value}`)
     result.value = data
   } catch {

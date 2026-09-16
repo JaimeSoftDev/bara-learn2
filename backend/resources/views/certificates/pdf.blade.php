@@ -62,7 +62,7 @@
 </head>
 <body>
     <div class="frame">
-        <div class="brand">Bara Learn</div>
+        <div class="brand">ADNTrate</div>
         <h1>Certificado de Finalización</h1>
         <div class="subtitle">Se otorga el presente certificado a</div>
         <div class="student-name">{{ $certificate->user->name }}</div>

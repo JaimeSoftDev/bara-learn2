@@ -68,11 +68,11 @@ async function submit() {
       <RouterLink to="/register" class="text-brand-600 font-medium hover:text-brand-700">Regístrate</RouterLink>
     </p>
 
-    <div class="mt-8 p-4 bg-gray-50 rounded-lg text-xs text-gray-500 space-y-1">
-      <p class="font-semibold text-gray-600">Usuarios de demostración (contraseña: password)</p>
-      <p>Profesor: laura@baralearn.test</p>
-      <p>Alumno: ana@baralearn.test</p>
-      <p>Admin: admin@baralearn.test</p>
+    <div class="mt-8 p-4 bg-ink-50 rounded-lg text-xs text-ink-900/60 space-y-1">
+      <p class="font-semibold text-ink-900/80">Usuarios de demostración (contraseña: password)</p>
+      <p>Profesora: elena@adntrate.test</p>
+      <p>Alumna: ana@adntrate.test</p>
+      <p>Admin: admin@adntrate.test</p>
     </div>
   </div>
 </template>

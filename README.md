@@ -1,10 +1,10 @@
-# Bara Learn
+# ADNTrate
 
-Plataforma de cursos online estilo Udemy/Teachable: los profesores crean cursos organizados en
-secciones y lecciones, donde cada lección combina un **vídeo de YouTube** (pegando el enlace) con
-**contenido escrito**. Los alumnos se inscriben (gratis, pagando con Stripe, o porque el profesor
-les da acceso manualmente tras un pago en efectivo), avanzan lección a lección, hacen preguntas,
-dejan valoraciones y obtienen un certificado en PDF al completar el curso.
+Plataforma de cursos online de **genética para estudiantes de grado**: los profesores crean cursos
+organizados en secciones y lecciones, donde cada lección combina un **vídeo de YouTube** (pegando
+el enlace) con **contenido escrito**. Los alumnos se inscriben (gratis, pagando con Stripe, o porque
+el profesor les da acceso manualmente tras un pago en efectivo), avanzan lección a lección, hacen
+preguntas, dejan valoraciones y obtienen un certificado en PDF al completar el curso.
 
 ## Stack
 
@@ -43,7 +43,7 @@ docker-compose.yml   MySQL para desarrollo local
 docker compose up -d
 ```
 
-Esto levanta MySQL en `localhost:3306` con la base de datos `bara_learn` (usuario `bara_learn` /
+Esto levanta MySQL en `localhost:3306` con la base de datos `adntrate` (usuario `adntrate` /
 contraseña `secret`), tal como espera `backend/.env.example`.
 
 > Alternativa sin Docker: en `backend/.env` cambia `DB_CONNECTION=sqlite` y ejecuta
@@ -68,12 +68,12 @@ Usuarios de demostración (contraseña `password` para todos):
 
 | Rol       | Email                     |
 |-----------|---------------------------|
-| Admin     | admin@baralearn.test      |
-| Profesor  | laura@baralearn.test      |
-| Profesor  | marcos@baralearn.test     |
-| Alumno    | ana@baralearn.test        |
-| Alumno    | pedro@baralearn.test      |
-| Alumno    | sofia@baralearn.test      |
+| Admin     | admin@adntrate.test       |
+| Profesora | elena@adntrate.test       |
+| Profesor  | javier@adntrate.test      |
+| Alumna    | ana@adntrate.test         |
+| Alumno    | pedro@adntrate.test       |
+| Alumna    | sofia@adntrate.test       |
 
 ### 3. Frontend (Vue)
 

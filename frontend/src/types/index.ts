@@ -49,11 +49,46 @@ export interface Lesson {
   content: string | null
 }
 
+export interface QuizSummary {
+  id: number
+  title: string
+  passing_score: number
+  is_final_exam: boolean
+  questions_count: number
+  passed: boolean
+  best_score: number | null
+}
+
+export interface QuizOption {
+  id: number
+  option_text: string
+  is_correct?: boolean
+}
+
+export interface QuizQuestion {
+  id: number
+  question: string
+  position: number
+  options: QuizOption[]
+}
+
+export interface Quiz {
+  id: number
+  course_id: number
+  section_id: number | null
+  is_final_exam: boolean
+  title: string
+  passing_score: number
+  questions_count?: number
+  questions: QuizQuestion[]
+}
+
 export interface Section {
   id: number
   title: string
   position: number
   lessons: Lesson[]
+  quiz?: QuizSummary | null
 }
 
 export interface Course extends CourseSummary {
@@ -72,6 +107,7 @@ export interface Course extends CourseSummary {
     bio: string | null
   }
   sections: Section[]
+  final_exam?: QuizSummary | null
 }
 
 export interface Review {

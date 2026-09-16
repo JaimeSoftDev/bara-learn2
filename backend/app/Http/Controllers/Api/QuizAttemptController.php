@@ -79,9 +79,10 @@ class QuizAttemptController extends Controller
             return $attempt;
         });
 
-        $this->certificates->maybeIssue($user, $course);
+        $certificateIssued = $this->certificates->maybeIssue($user, $course);
 
         return (new QuizAttemptResource($attempt->load('answers.question.options')))
+            ->additional(['certificate_issued' => $certificateIssued])
             ->response()->setStatusCode(201);
     }
 

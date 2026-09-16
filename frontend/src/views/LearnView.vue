@@ -5,7 +5,8 @@ import { api } from '@/api/client'
 import { useToastStore } from '@/stores/toast'
 import { apiErrorMessage } from '@/composables/useApiError'
 import YoutubePlayer from '@/components/YoutubePlayer.vue'
-import type { Course, Lesson, Question } from '@/types'
+import QuizPlayer from '@/components/QuizPlayer.vue'
+import type { Course, Lesson, Question, QuizSummary } from '@/types'
 
 const props = defineProps<{ slug: string }>()
 const router = useRouter()
@@ -13,6 +14,7 @@ const toast = useToastStore()
 
 const course = ref<Course | null>(null)
 const activeLesson = ref<Lesson | null>(null)
+const activeQuiz = ref<QuizSummary | null>(null)
 const loading = ref(true)
 const marking = ref(false)
 const questions = ref<Question[]>([])
@@ -49,11 +51,26 @@ async function load() {
 onMounted(load)
 
 async function selectLesson(lesson: Lesson) {
+  activeQuiz.value = null
   activeLesson.value = lesson
   tab.value = 'content'
   if (lesson.locked) return
   const { data } = await api.get(`/lessons/${lesson.id}/questions`)
   questions.value = data.data
+}
+
+function selectQuiz(quiz: QuizSummary) {
+  activeLesson.value = null
+  activeQuiz.value = quiz
+}
+
+async function refreshCourse() {
+  const { data } = await api.get(`/courses/${props.slug}`)
+  course.value = data.data
+}
+
+function onQuizGraded() {
+  refreshCourse()
 }
 
 async function toggleComplete() {
@@ -124,7 +141,13 @@ async function submitAnswer(questionId: number) {
 <template>
   <div v-if="loading" class="text-center py-20 text-gray-400">Cargando curso...</div>
   <div v-else-if="course" class="flex flex-col lg:flex-row min-h-[calc(100vh-4rem)]">
-    <div class="flex-1 min-w-0 bg-black">
+    <div v-if="activeQuiz" class="flex-1 min-w-0 bg-white p-6">
+      <button class="text-xs text-gray-500 hover:text-gray-800 mb-4" @click="activeQuiz = null">
+        ← Volver a las lecciones
+      </button>
+      <QuizPlayer :course-slug="course.slug" :quiz-id="activeQuiz.id" @graded="onQuizGraded" />
+    </div>
+    <div v-else class="flex-1 min-w-0 bg-black">
       <YoutubePlayer
         v-if="activeLesson?.youtube_video_id"
         :key="activeLesson.id"
@@ -254,6 +277,37 @@ async function submitAnswer(questionId: number) {
               {{ lesson.title }}
             </span>
             <span v-if="lesson.locked">🔒</span>
+          </button>
+          <button
+            v-if="section.quiz"
+            class="w-full text-left px-4 py-3 flex items-center gap-3 border-b border-gray-100 hover:bg-gray-50"
+            :class="activeQuiz?.id === section.quiz.id ? 'bg-brand-50' : ''"
+            @click="selectQuiz(section.quiz)"
+          >
+            <span
+              class="w-5 h-5 rounded-full border flex items-center justify-center text-xs shrink-0"
+              :class="section.quiz.passed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 text-transparent'"
+            >
+              ✓
+            </span>
+            <span class="text-sm flex-1 text-gray-800">📝 {{ section.quiz.title }}</span>
+          </button>
+        </div>
+
+        <div v-if="course.final_exam">
+          <p class="px-4 py-2 bg-gray-50 text-sm font-semibold sticky top-0">Examen final</p>
+          <button
+            class="w-full text-left px-4 py-3 flex items-center gap-3 border-b border-gray-100 hover:bg-gray-50"
+            :class="activeQuiz?.id === course.final_exam.id ? 'bg-brand-50' : ''"
+            @click="selectQuiz(course.final_exam)"
+          >
+            <span
+              class="w-5 h-5 rounded-full border flex items-center justify-center text-xs shrink-0"
+              :class="course.final_exam.passed ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-gray-300 text-transparent'"
+            >
+              ✓
+            </span>
+            <span class="text-sm flex-1 text-gray-800">📝 {{ course.final_exam.title }}</span>
           </button>
         </div>
       </div>

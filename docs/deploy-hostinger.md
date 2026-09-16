@@ -1,99 +1,114 @@
-# Desplegar ADNTrate en Hostinger (hosting compartido/Business con SSH)
+# Desplegar ADNTrate en Hostinger (jaimesoftdev.es)
+
+## Tu estructura de carpetas
+
+En tu servidor, dentro de `~/`, tienes:
+
+```
+~/inventario/                     ← backend de jaimesoftdev.com — NO TOCAR
+~/domains/jaimesoftdev.com/       ← NO TOCAR
+~/domains/neosdalud.com/          ← NO TOCAR
+~/domains/jaimesoftdev.es/        ← AQUÍ vamos a desplegar ADNTrate
+    └── public_html/              ← esta es la carpeta que Hostinger sirve como web pública de jaimesoftdev.es
+```
+
+Todo lo que sigue trabaja **únicamente** dentro de
+`~/domains/jaimesoftdev.es/`. No se toca nada de `inventario`, ni de
+`jaimesoftdev.com`, ni de `neosdalud.com`.
 
 ## Cómo está pensado el despliegue
 
-Para simplificar al máximo el despliegue en un hosting compartido (sin
-acceso root, normalmente sin Node.js instalado), la aplicación se sirve
-**desde un único dominio y un único documento raíz**:
+En vez de cambiar el "document root" en el panel (que en Hostinger no
+siempre es sencillo/visible), vamos a **enlazar** `public_html` a la
+carpeta `public` de Laravel con un enlace simbólico. Así:
 
-- Laravel (`backend/public`) es el *document root* del dominio.
-- El build de la SPA de Vue se copia dentro de `backend/public/assets` +
-  `backend/public/spa-index.html`, y Laravel sirve esos archivos
-  directamente (sin pasar por PHP) o, si la ruta no existe, devuelve la
-  SPA para que Vue Router la gestione (modo *history*).
-- La API vive bajo `/api/*` en el **mismo dominio**, así que no hay CORS,
-  ni cookies cross-domain, ni necesidad de subdominios ni de Node.js en
-  el servidor: solo PHP, Composer y MySQL.
+- No tocas ninguna configuración en hPanel.
+- `public_html` sigue existiendo, pero pasa a ser un enlace a
+  `adntrate/backend/public`.
+- La API vive bajo `/api/*` en el mismo dominio que la SPA de Vue, así
+  que no hay CORS, ni cookies cross-domain, ni necesidad de Node.js en
+  el servidor.
 
-El build de la SPA se genera **en tu máquina (o aquí, en este entorno)**
-con `scripts/build-for-hostinger.sh` y se sube al repositorio ya
-compilado. En el servidor solo hace falta `git pull` + `composer
-install`.
+El build de la SPA de Vue ya viene compilado dentro del repositorio
+(carpeta `backend/public/assets` + `backend/public/spa-index.html`), así
+que en el servidor **no hace falta instalar Node.js**, solo PHP,
+Composer y MySQL.
 
-## 0. Requisitos previos
+## 0. Requisitos previos (una sola vez, en hPanel)
 
-En el panel de Hostinger (hPanel):
+- **PHP 8.3 o superior** para el dominio `jaimesoftdev.es`: hPanel →
+  Sitios web → `jaimesoftdev.es` → Configuración PHP.
+- **Base de datos MySQL** creada: hPanel → Bases de datos → Bases de
+  datos MySQL → crea una nueva y apunta el host, nombre de BD, usuario y
+  contraseña que te muestre.
+- **SSH activado**: hPanel → Avanzado → Acceso SSH. Apunta el host, el
+  puerto y tu usuario SSH.
+- **SSL**: hPanel → `jaimesoftdev.es` → SSL → actívalo (gratis, tarda
+  unos minutos en emitirse). Hazlo ya para que esté listo cuando
+  termines el resto.
 
-- **PHP 8.3 o superior** seleccionado para el dominio (hPanel → Sitios web
-  → tu dominio → Configuración PHP).
-- **Base de datos MySQL** creada (hPanel → Bases de datos → Bases de
-  datos MySQL): apunta el host, nombre de BD, usuario y contraseña.
-- **SSH activado** (hPanel → Avanzado → SSH Access) y las credenciales
-  (host, puerto, usuario) a mano.
-- El dominio (p. ej. `adntrate.com`) ya apuntando a Hostinger.
-
-En tu máquina: `git`, y para poder ejecutar `scripts/build-for-hostinger.sh`
-necesitas Node.js 22+ (solo aquí, no en el servidor).
-
-## 1. Configurar el *document root* del dominio
-
-Por defecto Hostinger apunta el dominio a `public_html/`. Como Laravel
-necesita que el document root sea la carpeta `public/` del proyecto (no
-la raíz del proyecto entero, por seguridad), hay que cambiarlo:
-
-1. hPanel → **Sitios web** → tu dominio → **Configuración avanzada** →
-   **Cambiar la carpeta raíz del documento (Document Root)**.
-2. Súbelo a algo como `domains/adntrate.com/adntrate/backend/public`
-   (el nombre exacto depende de dónde clones el proyecto en el paso
-   siguiente).
-
-## 2. Subir el código por SSH
-
-Conéctate por SSH con los datos de hPanel:
+## 1. Conectarte por SSH
 
 ```bash
-ssh usuario@tu-servidor.hostinger.com -p 65002
+ssh tu-usuario@tu-servidor.hostinger.com -p 65002
 ```
 
-Clona el repositorio dentro de tu carpeta de dominios (fuera de
-`public_html`, ya que el document root apuntará a `.../adntrate/backend/public`):
+(los datos exactos —usuario, host, puerto— están en hPanel → Avanzado →
+Acceso SSH).
+
+## 2. Clonar el proyecto
+
+Clona el repositorio **dentro de** `~/domains/jaimesoftdev.es/`, en una
+carpeta nueva llamada `adntrate` (como hermana de `public_html`, no
+dentro de ella):
 
 ```bash
-cd ~/domains/adntrate.com
+cd ~/domains/jaimesoftdev.es
 git clone https://github.com/JaimeSoftDev/bara-learn2.git adntrate
-cd adntrate/backend
 ```
 
-> Si tu hosting no tiene `git`, sube el proyecto entero por SFTP (FileZilla
-> u otro cliente) a esa misma ruta.
+Con esto tendrás:
+
+```
+~/domains/jaimesoftdev.es/
+    ├── public_html/         ← lo que Hostinger sirve (todavía sin tocar)
+    └── adntrate/
+        ├── backend/         ← Laravel (esto es lo que importa)
+        └── frontend/        ← código fuente de Vue (no se usa en el servidor, ya viene compilado)
+```
 
 ## 3. Instalar dependencias PHP
 
 ```bash
+cd ~/domains/jaimesoftdev.es/adntrate/backend
 composer install --no-dev --optimize-autoloader
 ```
 
-Si `composer` no existe como comando, instálalo una vez:
+Si el comando `composer` no existe, instálalo una vez:
 
 ```bash
 curl -sS https://getcomposer.org/installer | php
 php composer.phar install --no-dev --optimize-autoloader
 ```
 
+(en ese caso, usa `php composer.phar` en vez de `composer` en el resto
+de la guía).
+
 ## 4. Configurar el entorno de producción
 
 ```bash
 cp .env.example .env
-nano .env   # o vi .env
+nano .env
 ```
 
-Ajusta como mínimo:
+Ajusta como mínimo estos valores (con los datos reales de tu BD del
+paso 0):
 
 ```env
 APP_NAME="ADNTrate"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://adntrate.com
+APP_URL=https://jaimesoftdev.es
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
@@ -106,19 +121,16 @@ SESSION_DRIVER=database
 SESSION_SECURE_COOKIE=true
 SESSION_DOMAIN=null
 
-SANCTUM_STATEFUL_DOMAINS=adntrate.com
-FRONTEND_URLS=https://adntrate.com
-FRONTEND_URL=https://adntrate.com
+SANCTUM_STATEFUL_DOMAINS=jaimesoftdev.es
+FRONTEND_URLS=https://jaimesoftdev.es
+FRONTEND_URL=https://jaimesoftdev.es
 
 STRIPE_KEY=pk_live_o_test_...
 STRIPE_SECRET=sk_live_o_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
-> Como todo vive en el mismo dominio, `SANCTUM_STATEFUL_DOMAINS` y
-> `FRONTEND_URLS` solo necesitan tu dominio sin subdominio de API aparte.
-
-Genera la clave de la aplicación:
+Guarda (en `nano`: Ctrl+O, Enter, Ctrl+X) y genera la clave de la app:
 
 ```bash
 php artisan key:generate --force
@@ -130,18 +142,20 @@ php artisan key:generate --force
 php artisan migrate --force
 ```
 
-¿Quieres los datos de demostración (cursos, profesores, alumnos de
-ejemplo) también en producción? Añade `--seed`:
+¿Quieres los cursos/profesores/alumnos de ejemplo también en
+producción? Añade `--seed`:
 
 ```bash
 php artisan migrate --force --seed
 ```
 
-Si no quieres datos de demo, crea tu propio administrador con Tinker:
+Si prefieres arrancar limpio (sin datos de demo), crea tu propio
+administrador:
 
 ```bash
 php artisan tinker
 >>> \App\Models\User::create(['name' => 'Tu Nombre', 'email' => 'tu@email.com', 'password' => bcrypt('una-contraseña-segura'), 'role' => 'admin']);
+>>> exit
 ```
 
 ## 6. Permisos
@@ -150,27 +164,53 @@ php artisan tinker
 chmod -R 775 storage bootstrap/cache
 ```
 
-## 7. SSL
+## 7. Enlazar `public_html` a Laravel (el paso que sustituye al "document root")
 
-hPanel → **SSL** → activa el SSL gratuito (Let's Encrypt) para el
-dominio. Suele tardar unos minutos en emitirse.
+Primero, comprueba qué hay ahora mismo dentro de `public_html` (para no
+perder nada por accidente):
+
+```bash
+ls -la ~/domains/jaimesoftdev.es/public_html
+```
+
+Si solo hay archivos de ejemplo/placeholder que Hostinger pone por
+defecto (o está vacía), muévela a un backup y crea el enlace:
+
+```bash
+cd ~/domains/jaimesoftdev.es
+mv public_html public_html_backup_$(date +%Y%m%d)
+ln -s adntrate/backend/public public_html
+```
+
+Verifica que el enlace se ha creado bien:
+
+```bash
+ls -la ~/domains/jaimesoftdev.es | grep public_html
+```
+
+Debe verse algo como `public_html -> adntrate/backend/public`.
+
+> Si prefieres no usar enlaces simbólicos (algunos hostings los
+> restringen, aunque Hostinger normalmente los permite), dímelo y te
+> paso la alternativa: copiar los archivos de `backend/public/*` dentro
+> de `public_html` y ajustar dos rutas en `public_html/index.php`.
 
 ## 8. Comprobar que todo funciona
 
-Visita `https://adntrate.com` — deberías ver la página de inicio de
-ADNTrate. Prueba:
+Visita `https://jaimesoftdev.es` — deberías ver la página de inicio de
+ADNTrate. Prueba también:
 
-- Navegar a `/courses` y a un curso concreto (enlaces "profundos" de
-  Vue Router) — deben cargar bien al refrescar la página, no dar 404.
+- Navegar a `/courses` y a un curso concreto, y **refrescar la página**
+  en esa URL — debe seguir funcionando (no dar 404).
 - Registrarte / iniciar sesión.
-- `https://adntrate.com/api/courses` debe devolver JSON.
+- `https://jaimesoftdev.es/api/courses` debe devolver JSON.
 
 ## 9. Stripe (opcional, para cursos de pago online)
 
 En el dashboard de Stripe, añade un webhook apuntando a:
 
 ```
-https://adntrate.com/api/stripe/webhook
+https://jaimesoftdev.es/api/stripe/webhook
 ```
 
 evento `checkout.session.completed`, y copia el "Signing secret" a
@@ -181,15 +221,15 @@ evento `checkout.session.completed`, y copia el "Signing secret" a
 **Cambios solo de backend** (PHP): en el servidor,
 
 ```bash
-cd ~/domains/adntrate.com/adntrate
+cd ~/domains/jaimesoftdev.es/adntrate
 git pull origin main
 cd backend
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 ```
 
-**Cambios de frontend** (Vue): primero, en tu máquina (o en este
-entorno), desde la raíz del proyecto:
+**Cambios de frontend** (Vue): primero, en tu máquina (o pídemelo a mí),
+desde la raíz del proyecto:
 
 ```bash
 ./scripts/build-for-hostinger.sh
@@ -198,21 +238,25 @@ git commit -m "Actualizar build de la SPA"
 git push origin main
 ```
 
-Luego, en el servidor: `git pull origin main` (no hace falta reinstalar
-nada más, ya que el build compilado ya viene en el repositorio).
+Luego, en el servidor: `git pull origin main` dentro de
+`~/domains/jaimesoftdev.es/adntrate` — no hace falta nada más, el build
+compilado ya viene en el repositorio y `public_html` ya apunta ahí por
+el enlace simbólico.
 
 ## Problemas comunes
 
-- **La web da 500 con `APP_DEBUG=false`**: revisa
-  `storage/logs/laravel.log` por SSH (`tail -50 storage/logs/laravel.log`).
-- **Los enlaces internos dan 404 al refrescar**: confirma que el
-  document root apunta a `backend/public` y que `backend/public/.htaccess`
-  existe (viene con el repositorio; Hostinger usa Apache/LiteSpeed y lo
-  necesita para las reescrituras de Laravel).
+- **La web da 500 con `APP_DEBUG=false`**: revisa el log por SSH:
+  `tail -50 ~/domains/jaimesoftdev.es/adntrate/backend/storage/logs/laravel.log`.
+- **Los enlaces internos dan 404 al refrescar**: confirma que
+  `public_html` es el enlace simbólico del paso 7 y que
+  `adntrate/backend/public/.htaccess` existe (viene con el repositorio).
 - **"Class not found" o error de Composer**: vuelve a ejecutar
-  `composer install --no-dev --optimize-autoloader` y confirma la
-  versión de PHP (`php -v`) sea 8.3+.
+  `composer install --no-dev --optimize-autoloader` dentro de
+  `adntrate/backend`, y confirma que `php -v` es 8.3 o superior.
 - **Login/registro fallan con error de CSRF**: revisa que `APP_URL` en
-  `.env` coincide exactamente con el dominio real (con `https://`) y que
-  `SANCTUM_STATEFUL_DOMAINS` tiene el dominio sin `https://` ni barra
-  final.
+  `.env` sea exactamente `https://jaimesoftdev.es` y que
+  `SANCTUM_STATEFUL_DOMAINS=jaimesoftdev.es` (sin `https://` ni barra
+  final).
+- **El enlace simbólico no funciona / la web sigue mostrando lo
+  antiguo**: dime qué ves y probamos la alternativa sin symlinks
+  (copiar archivos + editar `index.php`).

@@ -70,6 +70,29 @@ class Course extends Model
         return $this->hasMany(Wishlist::class);
     }
 
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quiz::class);
+    }
+
+    public function finalQuiz(): ?Quiz
+    {
+        if ($this->relationLoaded('quizzes')) {
+            return $this->quizzes->firstWhere('section_id', null);
+        }
+
+        return $this->quizzes()->whereNull('section_id')->first();
+    }
+
+    public function hasPassedAllQuizzes(?User $user): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return $this->quizzes->every(fn (Quiz $quiz) => $quiz->hasBeenPassedBy($user));
+    }
+
     protected function isFree(): Attribute
     {
         return Attribute::get(fn () => $this->price_cents === 0);

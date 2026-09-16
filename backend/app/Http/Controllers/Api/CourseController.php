@@ -94,7 +94,7 @@ class CourseController extends Controller
     {
         $this->authorize('view', $course);
 
-        $course->load(['teacher', 'category', 'sections.lessons']);
+        $course->load(['teacher', 'category', 'sections.lessons', 'sections.quiz', 'quizzes']);
 
         $user = $request->user();
         $canSeeFull = $course->isEnrolled($user) || ($user && ($user->id === $course->teacher_id || $user->isAdmin()));

@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Certificate;
 use App\Models\Lesson;
 use App\Models\LessonProgress;
+use App\Services\CertificateService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class LessonProgressController extends Controller
 {
+    public function __construct(private CertificateService $certificates) {}
+
     public function complete(Request $request, Lesson $lesson)
     {
         $course = $lesson->section->course;
@@ -23,11 +24,11 @@ class LessonProgressController extends Controller
             ['completed_at' => now()]
         );
 
-        $certificateIssued = $this->maybeIssueCertificate($user, $course);
+        $certificateIssued = $this->certificates->maybeIssue($user, $course);
 
         return response()->json([
             'completed' => true,
-            'progress_percent' => $this->progressPercent($user->id, $course),
+            'progress_percent' => $this->certificates->progressPercent($user->id, $course),
             'certificate_issued' => $certificateIssued,
         ]);
     }
@@ -41,38 +42,7 @@ class LessonProgressController extends Controller
 
         return response()->json([
             'completed' => false,
-            'progress_percent' => $this->progressPercent($user->id, $course),
+            'progress_percent' => $this->certificates->progressPercent($user->id, $course),
         ]);
-    }
-
-    private function progressPercent(int $userId, $course): int
-    {
-        $lessonIds = $course->lessons()->pluck('lessons.id');
-        $total = $lessonIds->count();
-
-        if ($total === 0) {
-            return 0;
-        }
-
-        $completed = LessonProgress::where('user_id', $userId)
-            ->whereNotNull('completed_at')
-            ->whereIn('lesson_id', $lessonIds)
-            ->count();
-
-        return (int) round($completed / $total * 100);
-    }
-
-    private function maybeIssueCertificate($user, $course): bool
-    {
-        if ($this->progressPercent($user->id, $course) < 100) {
-            return false;
-        }
-
-        $certificate = Certificate::firstOrCreate(
-            ['user_id' => $user->id, 'course_id' => $course->id],
-            ['code' => (string) Str::uuid(), 'issued_at' => now()]
-        );
-
-        return $certificate->wasRecentlyCreated;
     }
 }

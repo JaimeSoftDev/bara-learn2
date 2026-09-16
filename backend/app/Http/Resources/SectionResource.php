@@ -18,6 +18,7 @@ class SectionResource extends JsonResource
             'title' => $this->title,
             'position' => $this->position,
             'lessons' => LessonResource::collection($this->whenLoaded('lessons')),
+            'quiz' => $this->whenLoaded('quiz', fn () => $this->quiz ? new QuizSummaryResource($this->quiz) : null),
         ];
     }
 }

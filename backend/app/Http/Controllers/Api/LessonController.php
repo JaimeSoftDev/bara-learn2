@@ -30,7 +30,7 @@ class LessonController extends Controller
             'is_preview' => $data['is_preview'] ?? false,
         ]);
 
-        return response()->json(new LessonResource($lesson), 201);
+        return (new LessonResource($lesson))->response()->setStatusCode(201);
     }
 
     public function update(Request $request, Course $course, Section $section, Lesson $lesson)

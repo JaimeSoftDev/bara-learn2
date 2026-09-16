@@ -20,7 +20,7 @@ class SectionController extends Controller
             'position' => $position,
         ]);
 
-        return response()->json(new SectionResource($section), 201);
+        return (new SectionResource($section))->response()->setStatusCode(201);
     }
 
     public function update(Request $request, Course $course, Section $section)

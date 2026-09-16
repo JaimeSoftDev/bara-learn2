@@ -34,7 +34,7 @@ class ReviewController extends Controller
             $data
         );
 
-        return response()->json(new ReviewResource($review->load('user')), 201);
+        return (new ReviewResource($review->load('user')))->response()->setStatusCode(201);
     }
 
     public function destroy(Request $request, Course $course, Review $review)

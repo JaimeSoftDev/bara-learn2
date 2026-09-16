@@ -51,7 +51,7 @@ class EnrollmentController extends Controller
             ['source' => 'free', 'price_paid_cents' => 0, 'enrolled_at' => now()]
         );
 
-        return response()->json(new EnrollmentResource($enrollment->load('course')), 201);
+        return (new EnrollmentResource($enrollment->load('course')))->response()->setStatusCode(201);
     }
 
     /** Teacher/admin: list students enrolled in a course with their progress. */

@@ -49,9 +49,9 @@ const links = computed(() => {
           </RouterLink>
         </nav>
       </aside>
-      <div class="flex-1 min-w-0">
+      <main class="flex-1 min-w-0">
         <RouterView />
-      </div>
+      </main>
     </div>
     <ToastContainer />
   </div>

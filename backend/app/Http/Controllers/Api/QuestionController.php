@@ -41,7 +41,7 @@ class QuestionController extends Controller
             ...$data,
         ]);
 
-        return response()->json(new QuestionResource($question->load('user')), 201);
+        return (new QuestionResource($question->load('user')))->response()->setStatusCode(201);
     }
 
     public function destroy(Request $request, Lesson $lesson, Question $question)

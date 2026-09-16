@@ -78,7 +78,7 @@ class CourseController extends Controller
             'title' => $data['title'],
             'slug' => $this->uniqueSlug($data['title']),
             'subtitle' => $data['subtitle'] ?? null,
-            'description' => $data['description'] ? Purify::clean($data['description']) : null,
+            'description' => ! empty($data['description']) ? Purify::clean($data['description']) : null,
             'thumbnail_url' => $data['thumbnail_url'] ?? null,
             'level' => $data['level'],
             'language' => $data['language'] ?? 'es',
@@ -87,7 +87,7 @@ class CourseController extends Controller
             'what_you_will_learn' => $data['what_you_will_learn'] ?? [],
         ]);
 
-        return response()->json(new CourseResource($course), 201);
+        return (new CourseResource($course->fresh()))->response()->setStatusCode(201);
     }
 
     public function show(Request $request, Course $course)

@@ -1,42 +1,35 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
-import StarRating from './StarRating.vue'
+import { initialsFor, paletteForId } from '@/composables/useMonogram'
 import type { CourseSummary } from '@/types'
 
-defineProps<{ course: CourseSummary }>()
+const props = defineProps<{ course: CourseSummary }>()
 
-const levelLabels: Record<string, string> = {
-  beginner: 'Principiante',
-  intermediate: 'Intermedio',
-  advanced: 'Avanzado',
-}
+const colors = computed(() => paletteForId(props.course.category?.id ?? props.course.id))
+const initials = computed(() => initialsFor(props.course.title))
 </script>
 
 <template>
   <RouterLink
     :to="{ name: 'course-detail', params: { slug: course.slug } }"
-    class="group flex flex-col rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+    class="group flex flex-col card overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all"
   >
-    <div class="aspect-video bg-gray-100 overflow-hidden">
-      <img
-        v-if="course.thumbnail_url"
-        :src="course.thumbnail_url"
-        :alt="course.title"
-        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
+    <div
+      class="aspect-video flex items-center justify-center bg-[repeating-linear-gradient(135deg,rgba(0,0,0,0.03)_0px,rgba(0,0,0,0.03)_1px,transparent_1px,transparent_10px)]"
+      :style="{ backgroundColor: colors.bg }"
+    >
+      <span class="font-display text-4xl font-bold" :style="{ color: colors.fg }">{{ initials }}</span>
     </div>
-    <div class="flex flex-col flex-1 p-4 gap-1.5">
-      <span v-if="course.category" class="text-xs font-medium text-brand-600">{{ course.category.name }}</span>
-      <h3 class="font-semibold text-gray-900 line-clamp-2 leading-snug">{{ course.title }}</h3>
-      <p class="text-sm text-gray-500">{{ course.teacher.name }}</p>
-      <div class="flex items-center gap-1.5 text-sm">
-        <span class="font-semibold text-amber-600">{{ course.average_rating.toFixed(1) }}</span>
-        <StarRating :model-value="course.average_rating" size="w-3.5 h-3.5" />
-        <span class="text-gray-400">({{ course.reviews_count }})</span>
-      </div>
-      <div class="flex items-center justify-between mt-auto pt-2">
-        <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">{{ levelLabels[course.level] }}</span>
-        <span class="font-bold text-gray-900">
+    <div class="flex flex-col flex-1 p-5 gap-1.5">
+      <span v-if="course.category" class="eyebrow text-ink-900/40">{{ course.category.name }}</span>
+      <h3 class="font-display font-semibold text-lg text-ink-900 leading-snug line-clamp-2">
+        {{ course.title }}
+      </h3>
+      <p v-if="course.subtitle" class="text-sm text-ink-900/55 line-clamp-2">{{ course.subtitle }}</p>
+      <div class="flex items-center justify-between mt-3 pt-3 border-t border-ink-900/10">
+        <span class="text-sm font-medium text-accent-600 group-hover:text-accent-500">Ver curso →</span>
+        <span class="font-semibold text-ink-900 text-sm">
           {{ course.is_free ? 'Gratis' : `${course.price.toFixed(2)} €` }}
         </span>
       </div>

@@ -27,46 +27,44 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $categories = collect([
-            ['name' => 'Programación', 'icon' => 'code'],
-            ['name' => 'Diseño', 'icon' => 'palette'],
-            ['name' => 'Marketing', 'icon' => 'megaphone'],
-            ['name' => 'Negocios', 'icon' => 'briefcase'],
-            ['name' => 'Idiomas', 'icon' => 'languages'],
-            ['name' => 'Fotografía y Vídeo', 'icon' => 'camera'],
-            ['name' => 'Música', 'icon' => 'music'],
-            ['name' => 'Desarrollo Personal', 'icon' => 'sparkles'],
+            ['name' => 'Fundamentos', 'icon' => 'dna'],
+            ['name' => 'Molecular', 'icon' => 'microscope'],
+            ['name' => 'Evolución', 'icon' => 'leaf'],
+            ['name' => 'Aplicada', 'icon' => 'flask'],
+            ['name' => 'Clínica', 'icon' => 'stethoscope'],
+            ['name' => 'Bioinformática', 'icon' => 'code'],
         ])->map(fn ($c) => Category::create(['name' => $c['name'], 'slug' => Str::slug($c['name']), 'icon' => $c['icon']]));
 
         $admin = User::create([
             'name' => 'Administradora',
-            'email' => 'admin@baralearn.test',
+            'email' => 'admin@adntrate.test',
             'password' => bcrypt('password'),
             'role' => 'admin',
             'headline' => 'Administración de la plataforma',
         ]);
 
         $teacher1 = User::create([
-            'name' => 'Laura Gómez',
-            'email' => 'laura@baralearn.test',
+            'name' => 'Dra. Elena Castro',
+            'email' => 'elena@adntrate.test',
             'password' => bcrypt('password'),
             'role' => 'teacher',
-            'headline' => 'Desarrolladora Full-Stack y formadora',
-            'bio' => 'Más de 10 años enseñando programación web a miles de alumnos.',
+            'headline' => 'Catedrática de Genética Molecular',
+            'bio' => 'Más de 15 años investigando y enseñando genética molecular en la universidad. Autora de dos manuales de biología del gen.',
         ]);
 
         $teacher2 = User::create([
-            'name' => 'Marcos Ruiz',
-            'email' => 'marcos@baralearn.test',
+            'name' => 'Dr. Javier Ortiz',
+            'email' => 'javier@adntrate.test',
             'password' => bcrypt('password'),
             'role' => 'teacher',
-            'headline' => 'Diseñador UX/UI y fotógrafo',
-            'bio' => 'Ayudo a creativos a convertir su pasión en profesión.',
+            'headline' => 'Profesor de Genética Evolutiva y Poblacional',
+            'bio' => 'Investigador en genética de poblaciones. Ayuda a estudiantes de grado a conectar la teoría con problemas reales de laboratorio.',
         ]);
 
         $students = collect(['Ana', 'Pedro', 'Sofía', 'Diego', 'Marta'])->map(
             fn ($name, $i) => User::create([
                 'name' => $name.' Estudiante',
-                'email' => Str::slug($name).'@baralearn.test',
+                'email' => Str::slug($name).'@adntrate.test',
                 'password' => bcrypt('password'),
                 'role' => 'student',
             ])
@@ -74,51 +72,51 @@ class DatabaseSeeder extends Seeder
 
         $coursesData = [
             [
-                'teacher' => $teacher1,
-                'category' => $categories[0],
-                'title' => 'JavaScript Moderno desde Cero',
-                'subtitle' => 'Domina ES6+, asincronía y el DOM construyendo proyectos reales',
+                'teacher' => $teacher2,
+                'category' => $categories[0], // Fundamentos
+                'title' => 'Genética Mendeliana',
+                'subtitle' => 'Leyes de la herencia, cruces y probabilidad genética desde cero',
                 'level' => 'beginner',
                 'price_cents' => 0,
                 'sections' => [
-                    'Introducción a JavaScript' => ['Variables y tipos de datos', 'Funciones y ámbito', 'Estructuras de control'],
-                    'JavaScript Asíncrono' => ['Callbacks y Promesas', 'Async/Await', 'Fetch API'],
+                    'Las Leyes de Mendel' => ['Segregación y dominancia', 'Cruces monohíbridos', 'Cruces dihíbridos'],
+                    'Probabilidad Genética' => ['Cuadros de Punnett', 'Herencia ligada al sexo'],
                 ],
             ],
             [
                 'teacher' => $teacher1,
-                'category' => $categories[0],
-                'title' => 'Vue 3 y Composition API en Profundidad',
-                'subtitle' => 'Construye SPAs reactivas y mantenibles con Vue 3',
+                'category' => $categories[1], // Molecular
+                'title' => 'Biología Molecular del Gen',
+                'subtitle' => 'Estructura del ADN, replicación, transcripción y traducción',
                 'level' => 'intermediate',
                 'price_cents' => 4999,
                 'sections' => [
-                    'Fundamentos de Vue 3' => ['Reactividad con ref y reactive', 'Componentes y props', 'Composables reutilizables'],
-                    'Vue Router y Pinia' => ['Rutas anidadas y guardas', 'Gestión de estado con Pinia'],
+                    'Estructura y Replicación del ADN' => ['La doble hélice', 'Enzimas de la replicación', 'Reparación del ADN'],
+                    'Del Gen a la Proteína' => ['Transcripción', 'Traducción y el código genético'],
                 ],
             ],
             [
                 'teacher' => $teacher2,
-                'category' => $categories[1],
-                'title' => 'Diseño UX/UI para No Diseñadores',
-                'subtitle' => 'Principios de usabilidad y prototipado para crear productos increíbles',
-                'level' => 'beginner',
-                'price_cents' => 2999,
+                'category' => $categories[2], // Evolución
+                'title' => 'Genética de Poblaciones',
+                'subtitle' => 'Hardy-Weinberg, deriva, selección y flujo génico aplicados',
+                'level' => 'intermediate',
+                'price_cents' => 3999,
                 'sections' => [
-                    'Fundamentos del Diseño' => ['Teoría del color', 'Tipografía aplicada', 'Principios de composición'],
-                    'Prototipado' => ['Wireframes efectivos', 'Prototipos interactivos'],
+                    'El Equilibrio Hardy-Weinberg' => ['Frecuencias alélicas y genotípicas', 'Condiciones del equilibrio'],
+                    'Fuerzas Evolutivas' => ['Deriva genética', 'Selección natural', 'Flujo génico y mutación'],
                 ],
             ],
             [
-                'teacher' => $teacher2,
-                'category' => $categories[5],
-                'title' => 'Fotografía Digital: Del Automático al Manual',
-                'subtitle' => 'Aprende a controlar tu cámara y contar historias con imágenes',
-                'level' => 'beginner',
-                'price_cents' => 0,
+                'teacher' => $teacher1,
+                'category' => $categories[3], // Aplicada
+                'title' => 'Edición Génica con CRISPR',
+                'subtitle' => 'Fundamentos y aplicaciones de la edición del genoma',
+                'level' => 'advanced',
+                'price_cents' => 5999,
                 'sections' => [
-                    'La Cámara y la Luz' => ['Triángulo de exposición', 'Composición fotográfica'],
-                    'Edición Básica' => ['Flujo de trabajo en Lightroom'],
+                    'Fundamentos de CRISPR-Cas9' => ['Origen bacteriano del sistema', 'Diseño de guías ARN'],
+                    'Aplicaciones' => ['Edición en modelos animales', 'Terapia génica y bioética'],
                 ],
             ],
         ];
@@ -133,13 +131,13 @@ class DatabaseSeeder extends Seeder
                 'title' => $data['title'],
                 'slug' => Str::slug($data['title']),
                 'subtitle' => $data['subtitle'],
-                'description' => '<p>'.$data['subtitle'].'</p><p>Este curso incluye vídeos, material escrito y ejercicios prácticos para que aprendas a tu ritmo.</p>',
-                'thumbnail_url' => 'https://picsum.photos/seed/'.Str::slug($data['title']).'/640/360',
+                'description' => '<p>'.$data['subtitle'].'</p><p>Este curso incluye vídeos, material escrito y ejercicios prácticos para que aprendas a tu ritmo, con el mismo rigor que en un laboratorio universitario.</p>',
+                'thumbnail_url' => null,
                 'level' => $data['level'],
                 'language' => 'es',
                 'price_cents' => $data['price_cents'],
-                'requirements' => ['Ganas de aprender', 'Un ordenador con conexión a internet'],
-                'what_you_will_learn' => ['Fundamentos sólidos de la materia', 'Buenas prácticas profesionales', 'Un proyecto final para tu portfolio'],
+                'requirements' => ['Conocimientos básicos de biología de bachillerato', 'Ganas de aprender'],
+                'what_you_will_learn' => ['Fundamentos sólidos de la materia', 'Resolución de problemas tipo examen', 'Vocabulario y notación propios de la genética'],
                 'status' => 'published',
                 'published_at' => now()->subDays(random_int(5, 90)),
             ]);
@@ -194,7 +192,7 @@ class DatabaseSeeder extends Seeder
 
         Certificate::create(['user_id' => $ana->id, 'course_id' => $freeCourse->id, 'code' => (string) Str::uuid(), 'issued_at' => now()->subDays(1)]);
 
-        Review::create(['user_id' => $ana->id, 'course_id' => $freeCourse->id, 'rating' => 5, 'comment' => '¡Explicaciones clarísimas! Repetiré con más cursos de esta plataforma.']);
+        Review::create(['user_id' => $ana->id, 'course_id' => $freeCourse->id, 'rating' => 5, 'comment' => 'Por fin entendí la genética mendeliana. Explicaciones clarísimas y ejercicios muy parecidos a los de mi facultad.']);
 
         // Pedro buys the paid course through Stripe (simulated as already paid).
         $pedro = $students[1];
@@ -245,17 +243,17 @@ class DatabaseSeeder extends Seeder
             'user_id' => $ana->id,
             'lesson_id' => $firstLesson->id,
             'title' => '¿Dónde puedo practicar lo aprendido?',
-            'body' => 'Me ha encantado la lección, ¿hay algún reto adicional para practicar?',
+            'body' => 'Me ha encantado la lección, ¿hay algún reto adicional para practicar los cruces?',
         ]);
         $question->answers()->create([
             'user_id' => $freeCourse->teacher_id,
-            'body' => '¡Genial que preguntes! Tienes ejercicios adicionales en el siguiente apartado.',
+            'body' => '¡Genial que preguntes! Tienes ejercicios adicionales con solución en el siguiente apartado.',
             'is_instructor_answer' => true,
         ]);
 
         $this->command?->info('Datos de demo creados. Usuarios de prueba (contraseña: password):');
-        $this->command?->info('  Admin:    admin@baralearn.test');
-        $this->command?->info('  Profesor: laura@baralearn.test / marcos@baralearn.test');
-        $this->command?->info('  Alumnos:  ana@baralearn.test, pedro@baralearn.test, sofia@baralearn.test ...');
+        $this->command?->info('  Admin:    admin@adntrate.test');
+        $this->command?->info('  Profesores: elena@adntrate.test / javier@adntrate.test');
+        $this->command?->info('  Alumnos:  ana@adntrate.test, pedro@adntrate.test, sofia@adntrate.test ...');
     }
 }

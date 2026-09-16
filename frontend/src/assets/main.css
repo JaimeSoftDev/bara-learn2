@@ -1,16 +1,41 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans:
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+
+  /* Deep forest green — hero / footer / dark surfaces */
+  --color-ink-50: #f2f6f4;
+  --color-ink-100: #dfe9e4;
+  --color-ink-700: #1b3229;
+  --color-ink-800: #12261f;
+  --color-ink-900: #0c1e17;
+  --color-ink-950: #081a13;
+
+  /* Primary action green */
+  --color-brand-50: #eef6f1;
+  --color-brand-100: #d6ebdd;
+  --color-brand-200: #aed7bc;
+  --color-brand-300: #7ebd94;
+  --color-brand-400: #529d70;
+  --color-brand-500: #367d54;
+  --color-brand-600: #2b6644;
+  --color-brand-700: #245338;
+  --color-brand-800: #1f432e;
+  --color-brand-900: #1a3627;
+
+  /* Muted slate-blue accent (eyebrow labels, links) */
+  --color-accent-400: #6f93ad;
+  --color-accent-500: #4d7897;
+  --color-accent-600: #3c617c;
+
+  /* Warm paper background */
+  --color-paper: #faf8f4;
 }
 
 html,
@@ -20,11 +45,41 @@ body,
 }
 
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  background-color: var(--color-paper);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  @apply antialiased;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-serif);
+}
+
+.eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.14em];
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-600 px-6 py-3 font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-50;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-ink-900/20 px-6 py-3 font-semibold text-ink-900 transition-colors hover:bg-ink-900/5 disabled:opacity-50;
+}
+
+.btn-outline-invert {
+  @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-6 py-3 font-semibold text-white transition-colors hover:bg-white/10 disabled:opacity-50;
+}
+
+.card {
+  @apply rounded-2xl border border-ink-900/10 bg-white;
 }
 
 .prose-content {
-  @apply text-gray-700 leading-relaxed;
+  @apply text-ink-800/90 leading-relaxed;
 }
 .prose-content p {
   @apply mb-4;

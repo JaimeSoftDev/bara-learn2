@@ -130,7 +130,7 @@ function formatDuration(seconds: number | null) {
   <div v-if="loading" class="max-w-5xl mx-auto px-4 py-16 text-center text-gray-400">Cargando curso...</div>
   <div v-else-if="!course" class="max-w-5xl mx-auto px-4 py-16 text-center text-gray-400">Curso no encontrado.</div>
   <div v-else>
-    <section class="bg-gray-900 text-white">
+    <section class="bg-ink-950 text-white">
       <div class="max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2">
           <span v-if="course.category" class="text-brand-300 text-sm font-medium">{{ course.category.name }}</span>

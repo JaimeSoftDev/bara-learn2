@@ -5,7 +5,8 @@ import { api } from '@/api/client'
 import { useToastStore } from '@/stores/toast'
 import { apiErrorMessage } from '@/composables/useApiError'
 import RichTextEditor from '@/components/RichTextEditor.vue'
-import type { Category, Course, Section } from '@/types'
+import QuizEditorCard from '@/components/teacher/QuizEditorCard.vue'
+import type { Category, Course, Quiz, Section } from '@/types'
 
 const props = defineProps<{ slug: string }>()
 const router = useRouter()
@@ -13,9 +14,10 @@ const toast = useToastStore()
 
 const course = ref<Course | null>(null)
 const categories = ref<Category[]>([])
+const quizzes = ref<Quiz[]>([])
 const loading = ref(true)
 const savingDetails = ref(false)
-const tab = ref<'details' | 'curriculum'>('details')
+const tab = ref<'details' | 'curriculum' | 'quizzes'>('details')
 
 const details = ref({
   title: '',
@@ -60,7 +62,24 @@ async function load() {
   }
 }
 
-onMounted(load)
+async function loadQuizzes() {
+  if (!course.value) return
+  const { data } = await api.get(`/courses/${course.value.slug}/quizzes`)
+  quizzes.value = data.data
+}
+
+function finalQuiz(): Quiz | null {
+  return quizzes.value.find((q) => q.is_final_exam) ?? null
+}
+
+function sectionQuiz(sectionId: number): Quiz | null {
+  return quizzes.value.find((q) => q.section_id === sectionId) ?? null
+}
+
+onMounted(async () => {
+  await load()
+  await loadQuizzes()
+})
 
 async function saveDetails() {
   if (!course.value) return
@@ -190,6 +209,13 @@ async function deleteLesson(sectionId: number, lessonId: number) {
       >
         Contenido ({{ course.lessons_count }} lecciones)
       </button>
+      <button
+        class="pb-2 text-sm font-medium"
+        :class="tab === 'quizzes' ? 'border-b-2 border-brand-600 text-brand-700' : 'text-gray-500'"
+        @click="tab = 'quizzes'"
+      >
+        Exámenes
+      </button>
     </div>
 
     <div v-if="tab === 'details'" class="max-w-2xl space-y-4 bg-white border border-gray-200 rounded-xl p-6">
@@ -259,7 +285,7 @@ async function deleteLesson(sectionId: number, lessonId: number) {
       </button>
     </div>
 
-    <div v-else class="max-w-3xl space-y-6">
+    <div v-else-if="tab === 'curriculum'" class="max-w-3xl space-y-6">
       <div v-for="section in course.sections" :key="section.id" class="border border-gray-200 rounded-xl bg-white overflow-hidden">
         <div class="flex items-center justify-between px-4 py-3 bg-gray-50">
           <p class="font-semibold text-sm">{{ section.title }}</p>
@@ -327,6 +353,35 @@ async function deleteLesson(sectionId: number, lessonId: number) {
           + Añadir sección
         </button>
       </div>
+    </div>
+
+    <div v-else-if="tab === 'quizzes'" class="max-w-3xl space-y-6">
+      <p class="text-sm text-gray-500">
+        Los exámenes son de tipo test y se corrigen automáticamente. Aprobar los exámenes de sección y el examen final es
+        necesario para que el alumno obtenga el certificado del curso; no bloquean el avance de las lecciones.
+      </p>
+
+      <QuizEditorCard
+        :course-slug="course.slug"
+        :quiz="finalQuiz()"
+        :section-id="null"
+        label="Examen final del curso"
+        @changed="loadQuizzes"
+      />
+
+      <div v-if="course.sections.length" class="space-y-4">
+        <p class="text-sm font-semibold text-gray-700">Exámenes por sección</p>
+        <QuizEditorCard
+          v-for="section in course.sections"
+          :key="section.id"
+          :course-slug="course.slug"
+          :quiz="sectionQuiz(section.id)"
+          :section-id="section.id"
+          :label="`Examen de: ${section.title}`"
+          @changed="loadQuizzes"
+        />
+      </div>
+      <p v-else class="text-sm text-gray-400">Añade secciones en la pestaña "Contenido" para poder crear exámenes por sección.</p>
     </div>
   </div>
 </template>

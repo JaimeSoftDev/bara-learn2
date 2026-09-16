@@ -50,6 +50,7 @@ class CourseResource extends JsonResource
                 'bio' => $this->teacher->bio,
             ]),
             'sections' => SectionResource::collection($this->whenLoaded('sections')),
+            'final_exam' => $this->when($this->relationLoaded('quizzes'), fn () => $this->finalQuiz() ? new QuizSummaryResource($this->finalQuiz()) : null),
         ];
     }
 }

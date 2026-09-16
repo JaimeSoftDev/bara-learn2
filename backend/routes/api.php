@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\EnrollmentController;
 use App\Http\Controllers\Api\LessonController;
 use App\Http\Controllers\Api\LessonProgressController;
 use App\Http\Controllers\Api\QuestionController;
+use App\Http\Controllers\Api\QuizAttemptController;
+use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\QuizQuestionController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SectionController;
 use App\Http\Controllers\Api\StripeWebhookController;
@@ -60,6 +63,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/questions/{question}/answers', [AnswerController::class, 'store']);
     Route::delete('/questions/{question}/answers/{answer}', [AnswerController::class, 'destroy']);
 
+    Route::get('/courses/{course:slug}/quizzes/{quiz}/take', [QuizAttemptController::class, 'show']);
+    Route::post('/courses/{course:slug}/quizzes/{quiz}/attempts', [QuizAttemptController::class, 'store']);
+
     Route::post('/lessons/{lesson}/complete', [LessonProgressController::class, 'complete']);
     Route::delete('/lessons/{lesson}/complete', [LessonProgressController::class, 'uncomplete']);
 
@@ -78,6 +84,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/courses/{course:slug}/sections/{section}/lessons', [LessonController::class, 'store']);
         Route::put('/courses/{course:slug}/sections/{section}/lessons/{lesson}', [LessonController::class, 'update']);
         Route::delete('/courses/{course:slug}/sections/{section}/lessons/{lesson}', [LessonController::class, 'destroy']);
+
+        Route::get('/courses/{course:slug}/quizzes', [QuizController::class, 'index']);
+        Route::post('/courses/{course:slug}/quizzes', [QuizController::class, 'store']);
+        Route::put('/courses/{course:slug}/quizzes/{quiz}', [QuizController::class, 'update']);
+        Route::delete('/courses/{course:slug}/quizzes/{quiz}', [QuizController::class, 'destroy']);
+
+        Route::post('/courses/{course:slug}/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
+        Route::put('/courses/{course:slug}/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'update']);
+        Route::delete('/courses/{course:slug}/quizzes/{quiz}/questions/{question}', [QuizQuestionController::class, 'destroy']);
+        Route::post('/courses/{course:slug}/quizzes/{quiz}/questions/reorder', [QuizQuestionController::class, 'reorder']);
 
         Route::get('/courses/{course:slug}/students', [EnrollmentController::class, 'students']);
         Route::post('/courses/{course:slug}/students/grant-cash', [EnrollmentController::class, 'grantCash']);
